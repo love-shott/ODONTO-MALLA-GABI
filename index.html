@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Malla Interactiva Odontología - Semestres 1 a 12</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #fceeff;
+      padding: 1rem;
+      overflow-x: auto;
+    }
+    h1 {
+      color: #8a2be2;
+      margin-bottom: 0.5rem;
+    }
+    .malla {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+    .semestre {
+      min-width: 220px;
+      background: #f4f0fb;
+      border-radius: 10px;
+      padding: 1rem;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      flex-shrink: 0;
+    }
+    .semestre h2 {
+      font-size: 1.1rem;
+      color: #5d3395;
+      margin-bottom: 0.5rem;
+      text-align: center;
+    }
+    .materia {
+      background: #e5f0ff;
+      border-left: 6px solid #7aa6ff;
+      border-radius: 6px;
+      padding: 0.4rem 0.6rem;
+      margin-bottom: 0.4rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.9rem;
+      user-select: none;
+    }
+    .materia.aprobado {
+      background: #ffc0cb;
+      border-left-color: #ff69b4;
+      color: #440014;
+      font-weight: bold;
+    }
+    .materia.disabled {
+      background: #ddd3f5;
+      border-left-color: #aaa;
+      color: #888;
+    }
+    label {
+      flex: 1;
+      cursor: pointer;
+    }
+    input[type="checkbox"]:disabled + label {
+      cursor: default;
+    }
+    .btn-reset {
+      margin-top: 1rem;
+      background: #ffb6c1;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>Malla Interactiva – Odontología (Semestres 1 al 12)</h1>
+  <button class="btn-reset" onclick="resetearMalla()">🔄 Resetear malla</button>
+  <div class="malla" id="malla"></div>
+
+  <script>
+    const ramos = [
+      // Semestre 1
+      { id: 'anatomia', nombre: 'Anatomía Humana', semestre: 1, prereq: [] },
+      { id: 'bio_mol', nombre: 'Biología Molecular y Genética', semestre: 1, prereq: [] },
+      { id: 'quimica', nombre: 'Química y Bioquímica', semestre: 1, prereq: [] },
+      { id: 'bienestar', nombre: 'Bienestar, Autocuidado y Estilos de Vida', semestre: 1, prereq: [] },
+      { id: 'integ_i', nombre: 'Odontología Integrada I', semestre: 1, prereq: [] },
+
+      // Semestre 2
+      { id: 'bucomax', nombre: 'Anatomía Bucomaxilofacial', semestre: 2, prereq: ['anatomia'] },
+      { id: 'bioquim_micro', nombre: 'Bioquímica y Microbiología Clínica', semestre: 2, prereq: ['quimica', 'bio_mol'] },
+      { id: 'histologia', nombre: 'Histología General y Oral', semestre: 2, prereq: ['anatomia', 'bio_mol'] },
+      { id: 'integ_ii', nombre: 'Odontología Integrada II', semestre: 2, prereq: ['integ_i'] },
+      { id: 'electivo1', nombre: 'Electivo 1 Odontología', semestre: 2, prereq: [] },
+
+      // Semestre 3
+      { id: 'evidencia', nombre: 'Salud Basada en la Evidencia', semestre: 3, prereq: [] },
+      { id: 'fisio_i', nombre: 'Fisiología General y Oral I', semestre: 3, prereq: ['bucomax'] },
+      { id: 'integ_iii', nombre: 'Odontología Integrada III', semestre: 3, prereq: ['integ_ii'] },
+      { id: 'imagen_i', nombre: 'Imagenología Oral y Maxilofacial I', semestre: 3, prereq: ['bucomax'] },
+      { id: 'perio_endo_i', nombre: 'Periodoncia y Endodoncia I', semestre: 3, prereq: ['bioquim_micro'] },
+      { id: 'electivo2', nombre: 'Electivo 2 Odontología', semestre: 3, prereq: [] },
+
+      // Semestre 4
+      { id: 'fisio_ii', nombre: 'Fisiología General y Oral II', semestre: 4, prereq: ['fisio_i'] },
+      { id: 'patologia_gen', nombre: 'Patología e Inmunología General', semestre: 4, prereq: ['histologia'] },
+      { id: 'integ_iv', nombre: 'Odontología Integrada IV', semestre: 4, prereq: ['integ_iii'] },
+      { id: 'imagen_ii', nombre: 'Imagenología Oral y Maxilofacial II', semestre: 4, prereq: ['imagen_i'] },
+      { id: 'farmacologia', nombre: 'Farmacología', semestre: 4, prereq: ['fisio_i', 'bioquim_micro'] },
+      { id: 'perio_endo_ii', nombre: 'Periodoncia y Endodoncia II', semestre: 4, prereq: ['perio_endo_i'] },
+      { id: 'electivo3', nombre: 'Electivo 3 Odontología', semestre: 4, prereq: [] },
+
+      // Semestre 5
+      { id: 'psico_salud', nombre: 'Psicología para la Atención en Salud', semestre: 5, prereq: [] },
+      { id: 'adulto_i', nombre: 'Odontología Integral del Adulto y Odontogeriatría I', semestre: 5, prereq: ['integ_iv', 'perio_endo_ii'] },
+      { id: 'patologia_oral_i', nombre: 'Patología Oral I', semestre: 5, prereq: ['patologia_gen'] },
+      { id: 'tto_oclusion_i', nombre: 'Trastornos Temporomandibulares y Oclusión I', semestre: 5, prereq: ['fisio_ii'] },
+      { id: 'semiologia', nombre: 'Semiología y Anestesiología', semestre: 5, prereq: ['farmacologia', 'patologia_gen'] },
+      { id: 'cariologia', nombre: 'Cariología Clínica', semestre: 5, prereq: ['imagen_ii', 'integ_iv'] },
+      { id: 'electivo4', nombre: 'Electivo 4 Odontología', semestre: 5, prereq: [] },
+
+      // Semestre 6
+      { id: 'adulto_i_b', nombre: 'Odontología Integral del Adulto y Odontogeriatría I (continuación)', semestre: 6, prereq: ['adulto_i'] },
+      { id: 'o_beleysd', nombre: 'Odontología Basada en la Evidencia y Salud Digital', semestre: 6, prereq: ['evidencia'] },
+      { id: 'patologia_oral_ii', nombre: 'Patología Oral II', semestre: 6, prereq: ['patologia_oral_i'] },
+      { id: 'tto_oclusion_ii', nombre: 'Trastornos Temporomandibulares y Oclusión II', semestre: 6, prereq: ['tto_oclusion_i'] },
+      { id: 'cirugia_oral_i', nombre: 'Cirugía Oral I', semestre: 6, prereq: ['semiologia'] },
+      { id: 'calidad_seguridad', nombre: 'Calidad, Seguridad y Acreditación en Odontología', semestre: 6, prereq: ['semiologia'] },
+      { id: 'electivo5', nombre: 'Electivo 5 Odontología', semestre: 6, prereq: [] },
+
+      // Semestre 7
+      { id: 'bioetica', nombre: 'Bioética', semestre: 7, prereq: [] },
+      { id: 'ia_salud', nombre: 'Inteligencia Artificial Aplicada a la Salud', semestre: 7, prereq: [] },
+      { id: 'adulto_ii', nombre: 'Odontología Integral del Adulto y Odontogeriatría II', semestre: 7, prereq: ['adulto_i_b', 'cariologia'] },
+      { id: 'nino_i', nombre: 'Odontología Integral del Niño y Ortodoncia I', semestre: 7, prereq: ['cariologia', 'tto_oclusion_i'] },
+      { id: 'legal_forense', nombre: 'Odontología Legal y Forense', semestre: 7, prereq: ['o_beleysd'] },
+      { id: 'cirugia_oral_ii', nombre: 'Cirugía Oral II', semestre: 7, prereq: ['cirugia_oral_i'] },
+
+      // Semestre 8
+      { id: 'salud_publica', nombre: 'Salud Pública y Epidemiología', semestre: 8, prereq: [] },
+      { id: 'atencion_necesidades', nombre: 'Atención Personas con Necesidades Especiales y Cuidados Paliativos', semestre: 8, prereq: ['legal_forense'] },
+      { id: 'cirugia_oral_iii', nombre: 'Cirugía Oral III', semestre: 8, prereq: ['cirugia_oral_ii'] },
+
+      // Semestre 9
+      { id: 'met_investigacion', nombre: 'Métodos de Investigación en Salud y Bioestadística Aplicada', semestre: 9, prereq: [] },
+      { id: 'gestion_salud', nombre: 'Gestión en Sistemas de Salud', semestre: 9, prereq: ['salud_publica'] },
+      { id: 'adulto_iii', nombre: 'Odontología Integral del Adulto y Odontogeriatría III', semestre: 9, prereq: ['adulto_ii'] },
+      { id: 'nino_ii', nombre: 'Odontología Integral del Niño y Ortodoncia II', semestre: 9, prereq: ['nino_i'] },
+      { id: 'medicina_oral_i', nombre: 'Medicina Oral y Urgencia Odontológica I', semestre: 9, prereq: [] },
+
+      // Semestre 10
+      { id: 'trabajo_inv', nombre: 'Trabajo de Investigación', semestre: 10, prereq: ['met_investigacion'] },
+      { id: 'medicina_oral_ii', nombre: 'Medicina Oral y Urgencia Odontológica II', semestre: 10, prereq: ['medicina_oral_i', 'gestion_salud'] },
+      { id: 'atencion_primaria', nombre: 'Atención Primaria de Salud y Odontología', semestre: 10, prereq: ['gestion_salud'] },
+
+      // Semestre 11 y 12 (Licenciatura)
+      { id: 'internado', nombre: 'Internado Asistencial Docente', semestre: 11, prereq: [] },
+      { id: 'curso_infecciones', nombre: 'Curso de Infecciones Asociadas a Atención de Salud', semestre: 11, prereq: [] },
+      { id: 'curso_proteccion', nombre: 'Curso de Protección Radiológica', semestre: 11, prereq: [] },
+      { id: 'gestion_emprendimiento', nombre: 'Gestión de Emprendimiento y Accountability en Odontología', semestre: 11, prereq: [] },
+      { id: 'licenciatura', nombre: 'Licenciatura (11 y 12)', semestre: 12, prereq: [] }
+    ];
+
+    const sincronizados = [
+      ['adulto_i', 'adulto_i_b'],
+      ['adulto_i_b', 'adulto_i'],
+      ['adulto_ii', 'adulto_ii'],
+      ['nino_i', 'nino_i'],
+      ['nino_ii', 'nino_ii'],
+    ];
+
+    function prereqsAprobados(prereqs, estado) {
+      return prereqs.every(id => estado[id]);
+    }
+
+    function guardar() {
+      const estado = {};
+      ramos.forEach(r => {
+        const cb = document.getElementById(r.id);
+        estado[r.id] = cb ? cb.checked : false;
+      });
+      localStorage.setItem('estadoMallaGaby', JSON.stringify(estado));
+    }
+
+    function cargar() {
+      return JSON.parse(localStorage.getItem('estadoMallaGaby')) || {};
+    }
+
+    function crearMalla() {
+      const cont = document.getElementById("malla");
+      cont.innerHTML = "";
+      const estado = cargar();
+
+      for (let s = 1; s <= 12; s++) {
+        const col = document.createElement("div");
+        col.className = "semestre";
+        const titulo = document.createElement("h2");
+        titulo.textContent = `Semestre ${s}`;
+        col.appendChild(titulo);
+
+        ramos.filter(r => r.semestre === s).forEach(ramo => {
+          const div = document.createElement("div");
+          div.className = "materia";
+
+          const check = document.createElement("input");
+          check.type = "checkbox";
+          check.id = ramo.id;
+          check.checked = !!estado[ramo.id];
+
+          const habilitado = prereqsAprobados(ramo.prereq, estado);
+
+          if (!habilitado) {
+            check.disabled = true;
+            div.classList.add("disabled");
+            check.checked = false;
+          } else if (check.checked) {
+            div.classList.add("aprobado");
+          }
+
+          check.addEventListener("change", () => {
+            sincronizados.forEach(pair => {
+              if (pair.includes(ramo.id)) {
+                pair.forEach(id => {
+                  const cb = document.getElementById(id);
+                  if (cb && cb !== check) cb.checked = check.checked;
+                });
+              }
+            });
+            actualizar();
+            guardar();
+          });
+
+          const label = document.createElement("label");
+          label.htmlFor = ramo.id;
+          label.textContent = ramo.nombre;
+
+          div.appendChild(check);
+          div.appendChild(label);
+          col.appendChild(div);
+        });
+
+        cont.appendChild(col);
+      }
+    }
+
+    function actualizar() {
+      const estado = cargar();
+
+      ramos.forEach(ramo => {
+        const cb = document.getElementById(ramo.id);
+        const div = cb ? cb.parentElement : null;
+        if (!cb || !div) return;
+
+        const habilitado = prereqsAprobados(ramo.prereq, estado);
+
+        if (!habilitado) {
+          cb.disabled = true;
+          cb.checked = false;
+          div.classList.add("disabled");
+          div.classList.remove("aprobado");
+        } else {
+          cb.disabled = false;
+          div.classList.remove("disabled");
+          if (cb.checked) div.classList.add("aprobado");
+          else div.classList.remove("aprobado");
+        }
+      });
+    }
+
+    function resetearMalla() {
+      localStorage.removeItem("estadoMallaGaby");
+      crearMalla();
+    }
+
+    crearMalla();
+  </script>
+</body>
+</html>
