@@ -172,106 +172,111 @@
     ];
 
     function prereqsAprobados(prereqs, estado) {
-      return prereqs.every(id => estado[id]);
-    }
+  return prereqs.every(id => estado[id]);
+}
 
-    function guardar() {
-      const estado = {};
-      ramos.forEach(r => {
-        const cb = document.getElementById(r.id);
-        estado[r.id] = cb ? cb.checked : false;
-      });
-      localStorage.setItem('estadoMallaGaby', JSON.stringify(estado));
-    }
+function guardar() {
+  const estado = {};
+  ramos.forEach(r => {
+    const cb = document.getElementById(r.id);
+    estado[r.id] = cb ? cb.checked : false;
+  });
+  localStorage.setItem('estadoMallaGaby', JSON.stringify(estado));
+}
 
-    function cargar() {
-      return JSON.parse(localStorage.getItem('estadoMallaGaby')) || {};
-    }
+function cargar() {
+  return JSON.parse(localStorage.getItem('estadoMallaGaby')) || {};
+}
 
-    function crearMalla() {
-      const cont = document.getElementById("malla");
-      cont.innerHTML = "";
-      const estado = cargar();
+function crearMalla() {
+  const cont = document.getElementById("malla");
+  cont.innerHTML = "";
+  const estado = cargar();
 
-      for (let s = 1; s <= 12; s++) {
-        const col = document.createElement("div");
-        col.className = "semestre";
-        const titulo = document.createElement("h2");
-        titulo.textContent = `Semestre ${s}`;
-        col.appendChild(titulo);
+  for (let s = 1; s <= 12; s++) {
+    const col = document.createElement("div");
+    col.className = "semestre";
+    const titulo = document.createElement("h2");
+    titulo.textContent = `Semestre ${s}`;
+    col.appendChild(titulo);
 
-        ramos.filter(r => r.semestre === s).forEach(ramo => {
-          const div = document.createElement("div");
-          div.className = "materia";
+    ramos.filter(r => r.semestre === s).forEach(ramo => {
+      const div = document.createElement("div");
+      div.className = "materia";
 
-          const check = document.createElement("input");
-          check.type = "checkbox";
-          check.id = ramo.id;
-          check.checked = !!estado[ramo.id];
+      const check = document.createElement("input");
+      check.type = "checkbox";
+      check.id = ramo.id;
 
-          const habilitado = prereqsAprobados(ramo.prereq, estado);
+      const aprobado = !!estado[ramo.id];
+      check.checked = aprobado;
 
-          if (!habilitado) {
-            check.disabled = true;
-            div.classList.add("disabled");
-            check.checked = false;
-          } else if (check.checked) {
-            div.classList.add("aprobado");
-          }
+      const habilitado = prereqsAprobados(ramo.prereq, estado);
 
-          check.addEventListener("change", () => {
-            sincronizados.forEach(pair => {
-              if (pair.includes(ramo.id)) {
-                pair.forEach(id => {
-                  const cb = document.getElementById(id);
-                  if (cb && cb !== check) cb.checked = check.checked;
-                });
-              }
-            });
-            actualizar();
-            guardar();
-          });
-
-          const label = document.createElement("label");
-          label.htmlFor = ramo.id;
-          label.textContent = ramo.nombre;
-
-          div.appendChild(check);
-          div.appendChild(label);
-          col.appendChild(div);
-        });
-
-        cont.appendChild(col);
+      if (!habilitado) {
+        check.disabled = true;
+        check.checked = false;
+        div.classList.add("disabled");
+      } else if (aprobado) {
+        div.classList.add("aprobado");
       }
-    }
 
-    function actualizar() {
-      const estado = cargar();
-
-      ramos.forEach(ramo => {
-        const cb = document.getElementById(ramo.id);
-        const div = cb ? cb.parentElement : null;
-        if (!cb || !div) return;
-
-        const habilitado = prereqsAprobados(ramo.prereq, estado);
-
-        if (!habilitado) {
-          cb.disabled = true;
-          cb.checked = false;
-          div.classList.add("disabled");
-          div.classList.remove("aprobado");
-        } else {
-          cb.disabled = false;
-          div.classList.remove("disabled");
-          if (cb.checked) div.classList.add("aprobado");
-          else div.classList.remove("aprobado");
-        }
+      check.addEventListener("change", () => {
+        sincronizados.forEach(pair => {
+          if (pair.includes(ramo.id)) {
+            pair.forEach(id => {
+              const cb = document.getElementById(id);
+              if (cb && cb !== check) cb.checked = check.checked;
+            });
+          }
+        });
+        actualizar();
+        guardar();
       });
-    }
 
-    function resetearMalla() {
-      localStorage.removeItem("estadoMallaGaby");
-      crearMalla();
+      const label = document.createElement("label");
+      label.htmlFor = ramo.id;
+      label.textContent = ramo.nombre;
+
+      div.appendChild(check);
+      div.appendChild(label);
+      col.appendChild(div);
+    });
+
+    cont.appendChild(col);
+  }
+}
+
+function actualizar() {
+  const estado = cargar();
+
+  ramos.forEach(ramo => {
+    const cb = document.getElementById(ramo.id);
+    const div = cb ? cb.parentElement : null;
+    if (!cb || !div) return;
+
+    const habilitado = prereqsAprobados(ramo.prereq, estado);
+
+    if (!habilitado) {
+      cb.disabled = true;
+      cb.checked = false;
+      div.classList.add("disabled");
+      div.classList.remove("aprobado");
+    } else {
+      cb.disabled = false;
+      if (cb.checked) div.classList.add("aprobado");
+      else div.classList.remove("aprobado");
+      div.classList.remove("disabled");
+    }
+  });
+}
+
+function resetearMalla() {
+  localStorage.removeItem("estadoMallaGaby");
+  crearMalla();
+}
+
+crearMalla();
     }
 
     crearMalla();
